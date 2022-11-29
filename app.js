@@ -18,8 +18,8 @@ app.use((req, res, next) => {
 });
 app.use('/users', userRouter);
 app.use('/cards', cardRouter);
-app.use('*', (req, res, next) => {
-  next(new Error('Неверный URL запроса'));
+app.use('*', (req, res) => {
+  return res.status(404).json({ message: 'Bad URL' });
 });
 
 mongoose.connect(
