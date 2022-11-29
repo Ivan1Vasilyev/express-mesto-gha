@@ -6,7 +6,6 @@ const getCards = async (req, res) => {
     const cards = await Card.find({});
     return res.status(200).json(cards);
   } catch (e) {
-    console.error(e);
     return res.status(500).json({ message: 'На сервере произошла ошибка' });
   }
 };
@@ -17,9 +16,12 @@ const createCard = async (req, res) => {
     const newCard = await Card.create({ owner: cardsOwner, ...req.body });
     return res.status(201).json(newCard);
   } catch (e) {
-    console.error(e);
-    const errors = Object.values(e.errors).map((err) => err.message);
-    return res.status(400).json({ message: errors.join(', ') });
+    if (e.name === ' ValidationError') {
+      const errors = Object.values(e.errors).map((err) => err.message);
+      return res.status(400).json({ message: errors.join(', ') });
+    } else {
+      return res.status(500).json({ message: 'На сервере произошла ошибка' });
+    }
   }
 };
 
@@ -48,10 +50,12 @@ const likeCard = async (req, res) => {
     }
     return res.status(201).json(likedCard);
   } catch (e) {
-    console.error(e);
-    const errors = Object.values(e.errors).map((err) => err.message);
-    return res.status(400).json({ message: errors.join(', ') });
-    // return res.status(500).json({ message: 'На сервере произошла ошибка' });
+    console.log(e.name);
+    if (e.name === 'CastError') {
+      return res.status(400).json({ message: 'Некорректный id карточки' });
+    } else {
+      return res.status(500).json({ message: 'На сервере произошла ошибка' });
+    }
   }
 };
 
@@ -69,10 +73,11 @@ const dislikeCard = async (req, res) => {
     }
     return res.status(200).json(disLikedCard);
   } catch (e) {
-    console.error(e);
-    const errors = Object.values(e.errors).map((err) => err.message);
-    return res.status(400).json({ message: errors.join(', ') });
-    // return res.status(500).json({ message: 'На сервере произошла ошибка' });
+    if (e.name === 'CastError') {
+      return res.status(400).json({ message: 'Некорректный id карточки' });
+    } else {
+      return res.status(500).json({ message: 'На сервере произошла ошибка' });
+    }
   }
 };
 
