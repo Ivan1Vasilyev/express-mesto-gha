@@ -43,7 +43,7 @@ const upDateUserData = async (req, res) => {
   try {
     const userId = req.user._id;
     const { name, about } = req.body;
-    await User.updateOne({ _id: userId }, { name: name, about: about });
+    await User.updateOne({ _id: userId }, { name: name, about: about }, { runValidators: true });
     const updatedUser = await User.findById(userId);
     if (!updatedUser) {
       return res.status(404).json({ message: 'Пользователь не найден.' });
@@ -60,7 +60,7 @@ const upDateUserAvatar = async (req, res) => {
   try {
     const userId = req.user._id;
     const { avatar } = req.body;
-    await User.updateOne({ _id: userId }, { avatar: avatar });
+    await User.updateOne({ _id: userId }, { avatar: avatar }, { runValidators: true });
     const updatedUser = await User.findById(userId);
     if (!updatedUser) {
       return res.status(404).json({ message: 'Пользователь не найден.' });
