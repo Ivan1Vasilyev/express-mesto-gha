@@ -65,7 +65,7 @@ const upDateUserAvatar = async (req, res) => {
     if (!updatedUser) {
       return res.status(404).json({ message: 'Пользователь не найден.' });
     }
-    return res.status(201).json(updatedUser);
+    return res.status(200).json(updatedUser);
   } catch (e) {
     console.error(e);
     const errors = Object.values(e.errors).map((err) => err.message);
