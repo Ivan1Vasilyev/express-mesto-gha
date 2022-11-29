@@ -1,12 +1,19 @@
 const User = require('../models/users');
+const {
+  DEFAULT_ERROR,
+  NOT_CORRECT,
+  NOT_EXISTS,
+  DEFAULT_ERROR_MESSAGE,
+  NOT_CORRECT_MESSAGE,
+  NOT_EXISTS_MESSAGE,
+} = require('../utils/constants');
 
 const getUsers = async (req, res) => {
   try {
     const users = await User.find({});
     return res.status(200).json(users);
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({ message: 'На сервере произошла ошибка' });
+    return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
   }
 };
 
@@ -16,15 +23,15 @@ const getUser = async (req, res) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).json({ message: 'Пользователь не найден.' });
+      return res.status(NOT_EXISTS).json({ message: `${NOT_EXISTS_MESSAGE}: Пользователь не найден.` });
     }
 
     return res.status(200).json(user);
   } catch (e) {
     if (e.name === 'CastError') {
-      return res.status(400).json({ message: 'Некорректный id.' });
+      return res.status(NOT_CORRECT).json({ message: `${NOT_CORRECT_MESSAGE}: Некорректный id.` });
     }
-    return res.status(500).json(e);
+    return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
   }
 };
 
@@ -35,9 +42,9 @@ const createUser = async (req, res) => {
   } catch (e) {
     if (e.name === 'ValidationError') {
       const errors = Object.values(e.errors).map((err) => err.message);
-      return res.status(400).json({ message: errors.join(', ') });
+      return res.status(NOT_CORRECT).json({ message: errors.join(', ') });
     } else {
-      return res.status(500).json({ message: 'На сервере произошла ошибка' });
+      return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
     }
   }
 };
@@ -49,15 +56,15 @@ const upDateUserData = async (req, res) => {
     await User.updateOne({ _id: userId }, { name: name, about: about }, { runValidators: true });
     const updatedUser = await User.findById(userId);
     if (!updatedUser) {
-      return res.status(404).json({ message: 'Пользователь не найден.' });
+      return res.status(NOT_EXISTS).json({ message: `${NOT_EXISTS_MESSAGE}: Пользователь не найден.` });
     }
     return res.status(200).json(updatedUser);
   } catch (e) {
     if (e.name === 'ValidationError') {
       const errors = Object.values(e.errors).map((err) => err.message);
-      return res.status(400).json({ message: errors.join(', ') });
+      return res.status(NOT_CORRECT).json({ message: errors.join(', ') });
     } else {
-      return res.status(500).json({ message: 'На сервере произошла ошибка' });
+      return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
     }
   }
 };
@@ -69,15 +76,15 @@ const upDateUserAvatar = async (req, res) => {
     await User.updateOne({ _id: userId }, { avatar: avatar }, { runValidators: true });
     const updatedUser = await User.findById(userId);
     if (!updatedUser) {
-      return res.status(404).json({ message: 'Пользователь не найден.' });
+      return res.status(NOT_EXISTS).json({ message: `${NOT_EXISTS_MESSAGE}: Пользователь не найден.` });
     }
     return res.status(200).json(updatedUser);
   } catch (e) {
     if (e.name === 'ValidationError') {
       const errors = Object.values(e.errors).map((err) => err.message);
-      return res.status(400).json({ message: errors.join(', ') });
+      return res.status(NOT_CORRECT).json({ message: errors.join(', ') });
     } else {
-      return res.status(500).json({ message: 'На сервере произошла ошибка' });
+      return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
     }
   }
 };
