@@ -24,7 +24,7 @@ const getUser = async (req, res) => {
     if (e.name === 'CastError') {
       return res.status(400).json({ message: 'Некорректный id.' });
     }
-    return res.status(500).json({ message: 'На сервере произошла ошибка' });
+    return res.status(500).json(e);
   }
 };
 
@@ -48,7 +48,7 @@ const upDateUserData = async (req, res) => {
     if (!updatedUser) {
       return res.status(404).json({ message: 'Пользователь не найден.' });
     }
-    return res.status(201).json(updatedUser);
+    return res.status(200).json(updatedUser);
   } catch (e) {
     console.error(e);
     const errors = Object.values(e.errors).map((err) => err.message);
