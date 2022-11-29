@@ -4,7 +4,7 @@
   "description": "sprint 13",
   "main": "app.js",
   "scripts": {
-    "run": "node app.js",
+    "start": "node app.js",
     "dev": "nodemon app.js",
     "lint": "npx eslint"
   },

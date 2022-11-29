@@ -16,5 +16,8 @@ module.exports = {
         allow: ['_id'],
       },
     ],
+    'object-curly-newline': {
+      multiline: true,
+    },
   },
 };
