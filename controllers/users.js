@@ -33,9 +33,12 @@ const createUser = async (req, res) => {
     const newUser = await User.create(req.body);
     return res.status(201).json(newUser);
   } catch (e) {
-    console.error(e);
-    const errors = Object.values(e.errors).map((err) => err.message);
-    return res.status(400).json({ message: errors.join(', ') });
+    if (e.name === 'ValidationError') {
+      const errors = Object.values(e.errors).map((err) => err.message);
+      return res.status(400).json({ message: errors.join(', ') });
+    } else {
+      return res.status(500).json({ message: 'На сервере произошла ошибка' });
+    }
   }
 };
 
@@ -50,9 +53,12 @@ const upDateUserData = async (req, res) => {
     }
     return res.status(200).json(updatedUser);
   } catch (e) {
-    console.error(e);
-    const errors = Object.values(e.errors).map((err) => err.message);
-    return res.status(400).json({ message: errors.join(', ') });
+    if (e.name === 'ValidationError') {
+      const errors = Object.values(e.errors).map((err) => err.message);
+      return res.status(400).json({ message: errors.join(', ') });
+    } else {
+      return res.status(500).json({ message: 'На сервере произошла ошибка' });
+    }
   }
 };
 
@@ -67,9 +73,12 @@ const upDateUserAvatar = async (req, res) => {
     }
     return res.status(200).json(updatedUser);
   } catch (e) {
-    console.error(e);
-    const errors = Object.values(e.errors).map((err) => err.message);
-    return res.status(400).json({ message: errors.join(', ') });
+    if (e.name === 'ValidationError') {
+      const errors = Object.values(e.errors).map((err) => err.message);
+      return res.status(400).json({ message: errors.join(', ') });
+    } else {
+      return res.status(500).json({ message: 'На сервере произошла ошибка' });
+    }
   }
 };
 

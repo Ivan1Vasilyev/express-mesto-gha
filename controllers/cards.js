@@ -27,12 +27,19 @@ const createCard = async (req, res) => {
 
 const deleteCard = async (req, res) => {
   try {
-    const { cardId } = req.params;
-    await Card.deleteOne({ _id: cardId });
+    const response = await Card.findByIdAndRemove(req.params.cardId);
+    console.log(response);
+    if (!response) {
+      return res.status(404).json({ message: 'Несуществующий id карточки' });
+    }
     const newCardCollection = await Card.find({});
     return res.status(200).json(newCardCollection);
   } catch (e) {
-    return res.status(500).json({ message: 'На сервере произошла ошибка' });
+    if (e.name === 'CastError') {
+      return res.status(400).json({ message: 'Некорректный id карточки' });
+    } else {
+      return res.status(500).json({ message: 'На сервере произошла ошибка' });
+    }
   }
 };
 
@@ -50,7 +57,6 @@ const likeCard = async (req, res) => {
     }
     return res.status(201).json(likedCard);
   } catch (e) {
-    console.log(e.name);
     if (e.name === 'CastError') {
       return res.status(400).json({ message: 'Некорректный id карточки' });
     } else {
