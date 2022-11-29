@@ -48,7 +48,10 @@ const likeCard = async (req, res) => {
     }
     return res.status(201).json(likedCard);
   } catch (e) {
-    return res.status(500).json({ message: 'На сервере произошла ошибка' });
+    console.error(e);
+    const errors = Object.values(e.errors).map((err) => err.message);
+    return res.status(400).json({ message: errors.join(', ') });
+    // return res.status(500).json({ message: 'На сервере произошла ошибка' });
   }
 };
 
@@ -64,9 +67,12 @@ const dislikeCard = async (req, res) => {
     if (!disLikedCard) {
       return res.status(404).json({ message: 'Карточка не найдена.' });
     }
-    return res.status(201).json(disLikedCard);
+    return res.status(200).json(disLikedCard);
   } catch (e) {
-    return res.status(500).json({ message: 'На сервере произошла ошибка' });
+    console.error(e);
+    const errors = Object.values(e.errors).map((err) => err.message);
+    return res.status(400).json({ message: errors.join(', ') });
+    // return res.status(500).json({ message: 'На сервере произошла ошибка' });
   }
 };
 
