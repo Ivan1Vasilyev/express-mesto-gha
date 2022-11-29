@@ -16,7 +16,7 @@ const createCard = async (req, res) => {
     const newCard = await Card.create({ owner: cardsOwner, ...req.body });
     return res.status(201).json(newCard);
   } catch (e) {
-    if (e.name === ' ValidationError') {
+    if (e.name === 'ValidationError') {
       const errors = Object.values(e.errors).map((err) => err.message);
       return res.status(400).json({ message: errors.join(', ') });
     } else {
