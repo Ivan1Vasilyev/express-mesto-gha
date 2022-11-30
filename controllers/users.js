@@ -43,9 +43,8 @@ const createUser = async (req, res) => {
     if (e.name === 'ValidationError') {
       const errors = Object.values(e.errors).map((err) => err.message);
       return res.status(NOT_CORRECT).json({ message: errors.join(', ') });
-    } else {
-      return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
     }
+    return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
   }
 };
 
@@ -53,7 +52,7 @@ const upDateUserData = async (req, res) => {
   try {
     const userId = req.user._id;
     const { name, about } = req.body;
-    await User.updateOne({ _id: userId }, { name: name, about: about }, { runValidators: true });
+    await User.updateOne({ _id: userId }, { name, about }, { runValidators: true });
     const updatedUser = await User.findById(userId);
     if (!updatedUser) {
       return res.status(NOT_EXISTS).json({ message: `${NOT_EXISTS_MESSAGE}: Пользователь не найден.` });
@@ -63,9 +62,8 @@ const upDateUserData = async (req, res) => {
     if (e.name === 'ValidationError') {
       const errors = Object.values(e.errors).map((err) => err.message);
       return res.status(NOT_CORRECT).json({ message: errors.join(', ') });
-    } else {
-      return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
     }
+    return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
   }
 };
 
@@ -73,7 +71,7 @@ const upDateUserAvatar = async (req, res) => {
   try {
     const userId = req.user._id;
     const { avatar } = req.body;
-    await User.updateOne({ _id: userId }, { avatar: avatar }, { runValidators: true });
+    await User.updateOne({ _id: userId }, { avatar }, { runValidators: true });
     const updatedUser = await User.findById(userId);
     if (!updatedUser) {
       return res.status(NOT_EXISTS).json({ message: `${NOT_EXISTS_MESSAGE}: Пользователь не найден.` });
@@ -83,9 +81,8 @@ const upDateUserAvatar = async (req, res) => {
     if (e.name === 'ValidationError') {
       const errors = Object.values(e.errors).map((err) => err.message);
       return res.status(NOT_CORRECT).json({ message: errors.join(', ') });
-    } else {
-      return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
     }
+    return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
   }
 };
 
