@@ -1,5 +1,4 @@
 const Card = require('../models/cards');
-const User = require('../models/users');
 const {
   DEFAULT_ERROR,
   NOT_CORRECT,
@@ -12,7 +11,7 @@ const {
 const getCards = async (req, res) => {
   try {
     const cards = await Card.find({});
-    return res.status(200).json(cards);
+    return res.json(cards);
   } catch (e) {
     return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
   }
@@ -20,8 +19,7 @@ const getCards = async (req, res) => {
 
 const createCard = async (req, res) => {
   try {
-    const cardsOwner = await User.findById(req.user._id);
-    const newCard = await Card.create({ owner: cardsOwner, ...req.body });
+    const newCard = await Card.create({ owner: req.user._id, ...req.body });
     return res.status(201).json(newCard);
   } catch (e) {
     if (e.name === 'ValidationError') {
@@ -36,13 +34,16 @@ const deleteCard = async (req, res) => {
   try {
     const response = await Card.findByIdAndRemove(req.params.cardId);
     if (!response) {
-      return res.status(NOT_EXISTS).json({ message: `${NOT_EXISTS_MESSAGE}: Несуществующий id карточки` });
+      return res
+        .status(NOT_EXISTS)
+        .json({ message: `${NOT_EXISTS_MESSAGE}: Несуществующий id карточки` });
     }
-    const newCardCollection = await Card.find({});
-    return res.status(200).json(newCardCollection);
+    return res.json(response);
   } catch (e) {
     if (e.name === 'CastError') {
-      return res.status(NOT_CORRECT).json({ message: `${NOT_CORRECT_MESSAGE}: Некорректный id карточки` });
+      return res
+        .status(NOT_CORRECT)
+        .json({ message: `${NOT_CORRECT_MESSAGE}: Некорректный id карточки` });
     }
     return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
   }
@@ -56,12 +57,16 @@ const likeCard = async (req, res) => {
       { new: true },
     );
     if (!likedCard) {
-      return res.status(NOT_EXISTS).json({ message: `${NOT_EXISTS_MESSAGE}: Несуществующий id карточки` });
+      return res
+        .status(NOT_EXISTS)
+        .json({ message: `${NOT_EXISTS_MESSAGE}: Несуществующий id карточки` });
     }
     return res.status(201).json(likedCard);
   } catch (e) {
     if (e.name === 'CastError') {
-      return res.status(NOT_CORRECT).json({ message: `${NOT_CORRECT_MESSAGE}: Некорректный id карточки` });
+      return res
+        .status(NOT_CORRECT)
+        .json({ message: `${NOT_CORRECT_MESSAGE}: Некорректный id карточки` });
     }
     return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
   }
@@ -75,12 +80,16 @@ const dislikeCard = async (req, res) => {
       { new: true },
     );
     if (!disLikedCard) {
-      return res.status(NOT_EXISTS).json({ message: `${NOT_EXISTS_MESSAGE}: Несуществующий id карточки` });
+      return res
+        .status(NOT_EXISTS)
+        .json({ message: `${NOT_EXISTS_MESSAGE}: Несуществующий id карточки` });
     }
-    return res.status(200).json(disLikedCard);
+    return res.json(disLikedCard);
   } catch (e) {
     if (e.name === 'CastError') {
-      return res.status(NOT_CORRECT).json({ message: `${NOT_CORRECT_MESSAGE}: Некорректный id карточки` });
+      return res
+        .status(NOT_CORRECT)
+        .json({ message: `${NOT_CORRECT_MESSAGE}: Некорректный id карточки` });
     }
     return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
   }

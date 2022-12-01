@@ -11,7 +11,7 @@ const {
 const getUsers = async (req, res) => {
   try {
     const users = await User.find({});
-    return res.status(200).json(users);
+    return res.json(users);
   } catch (e) {
     return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
   }
@@ -23,10 +23,12 @@ const getUser = async (req, res) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(NOT_EXISTS).json({ message: `${NOT_EXISTS_MESSAGE}: Пользователь не найден.` });
+      return res
+        .status(NOT_EXISTS)
+        .json({ message: `${NOT_EXISTS_MESSAGE}: Пользователь не найден.` });
     }
 
-    return res.status(200).json(user);
+    return res.json(user);
   } catch (e) {
     if (e.name === 'CastError') {
       return res.status(NOT_CORRECT).json({ message: `${NOT_CORRECT_MESSAGE}: Некорректный id.` });
@@ -37,7 +39,8 @@ const getUser = async (req, res) => {
 
 const createUser = async (req, res) => {
   try {
-    const newUser = await User.create(req.body);
+    const { name, about, avatar } = req.body;
+    const newUser = await User.create({ name, about, avatar });
     return res.status(201).json(newUser);
   } catch (e) {
     if (e.name === 'ValidationError') {
@@ -50,14 +53,20 @@ const createUser = async (req, res) => {
 
 const upDateUserData = async (req, res) => {
   try {
-    const userId = req.user._id;
     const { name, about } = req.body;
-    await User.updateOne({ _id: userId }, { name, about }, { runValidators: true });
-    const updatedUser = await User.findById(userId);
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      { name, about },
+      { runValidators: true },
+    );
+
     if (!updatedUser) {
-      return res.status(NOT_EXISTS).json({ message: `${NOT_EXISTS_MESSAGE}: Пользователь не найден.` });
+      return res
+        .status(NOT_EXISTS)
+        .json({ message: `${NOT_EXISTS_MESSAGE}: Пользователь не найден.` });
     }
-    return res.status(200).json(updatedUser);
+
+    return res.json(updatedUser);
   } catch (e) {
     if (e.name === 'ValidationError') {
       const errors = Object.values(e.errors).map((err) => err.message);
@@ -69,14 +78,19 @@ const upDateUserData = async (req, res) => {
 
 const upDateUserAvatar = async (req, res) => {
   try {
-    const userId = req.user._id;
-    const { avatar } = req.body;
-    await User.updateOne({ _id: userId }, { avatar }, { runValidators: true });
-    const updatedUser = await User.findById(userId);
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      req.body.avatar,
+      { runValidators: true },
+    );
+
     if (!updatedUser) {
-      return res.status(NOT_EXISTS).json({ message: `${NOT_EXISTS_MESSAGE}: Пользователь не найден.` });
+      return res
+        .status(NOT_EXISTS)
+        .json({ message: `${NOT_EXISTS_MESSAGE}: Пользователь не найден.` });
     }
-    return res.status(200).json(updatedUser);
+
+    return res.json(updatedUser);
   } catch (e) {
     if (e.name === 'ValidationError') {
       const errors = Object.values(e.errors).map((err) => err.message);
@@ -86,4 +100,10 @@ const upDateUserAvatar = async (req, res) => {
   }
 };
 
-module.exports = { getUser, getUsers, createUser, upDateUserData, upDateUserAvatar };
+module.exports = {
+  getUser,
+  getUsers,
+  createUser,
+  upDateUserData,
+  upDateUserAvatar,
+};
