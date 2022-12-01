@@ -90,4 +90,6 @@ const dislikeCard = async (req, res) => {
   }
 };
 
-module.exports = { deleteCard, getCards, createCard, likeCard, dislikeCard };
+module.exports = {
+  deleteCard, getCards, createCard, likeCard, dislikeCard,
+};
