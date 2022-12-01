@@ -57,7 +57,7 @@ const upDateUserData = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       req.user._id,
       { name, about },
-      { runValidators: true },
+      { runValidators: true, new: true },
     );
 
     if (!updatedUser) {
@@ -78,11 +78,10 @@ const upDateUserData = async (req, res) => {
 
 const upDateUserAvatar = async (req, res) => {
   try {
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user._id,
-      req.body.avatar,
-      { runValidators: true },
-    );
+    const updatedUser = await User.findByIdAndUpdate(req.user._id, req.body.avatar, {
+      runValidators: true,
+      new: true,
+    });
 
     if (!updatedUser) {
       return res
