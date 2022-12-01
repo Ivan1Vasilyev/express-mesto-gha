@@ -86,6 +86,4 @@ const upDateUserAvatar = async (req, res) => {
   }
 };
 
-module.exports = {
-  getUser, getUsers, createUser, upDateUserData, upDateUserAvatar,
-};
+module.exports = { getUser, getUsers, createUser, upDateUserData, upDateUserAvatar };

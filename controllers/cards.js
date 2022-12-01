@@ -52,9 +52,7 @@ const likeCard = async (req, res) => {
   try {
     const likedCard = await Card.findByIdAndUpdate(
       req.params.cardId,
-      {
-        $addToSet: { likes: req.user._id },
-      },
+      { $addToSet: { likes: req.user._id } },
       { new: true },
     );
     if (!likedCard) {
@@ -73,9 +71,7 @@ const dislikeCard = async (req, res) => {
   try {
     const disLikedCard = await Card.findByIdAndUpdate(
       req.params.cardId,
-      {
-        $pull: { likes: req.user._id },
-      },
+      { $pull: { likes: req.user._id } },
       { new: true },
     );
     if (!disLikedCard) {
@@ -90,6 +86,4 @@ const dislikeCard = async (req, res) => {
   }
 };
 
-module.exports = {
-  deleteCard, getCards, createCard, likeCard, dislikeCard,
-};
+module.exports = { deleteCard, getCards, createCard, likeCard, dislikeCard };
