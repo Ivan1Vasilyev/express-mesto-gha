@@ -1,3 +1,5 @@
+const bcryptjs = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/users');
 const {
   DEFAULT_ERROR,
@@ -7,7 +9,8 @@ const {
   NOT_CORRECT_MESSAGE,
   NOT_EXISTS_MESSAGE,
 } = require('../utils/constants');
-const bcryptjs = require('bcryptjs');
+
+const { JWT_SECRET } = process.env;
 
 const getUsers = async (req, res) => {
   try {
@@ -40,10 +43,10 @@ const getUser = async (req, res) => {
 
 const createUser = async (req, res) => {
   try {
-    const password = bcryptjs.hash(req.body.password, 10);
+    const hash = await bcryptjs.hash(req.body.password, 10);
     const { name, about, avatar, email } = req.body;
-    const newUser = await User.create({ name, about, avatar, email, password });
-    return res.status(201).json(newUser);
+    const newUser = await User.create({ name, about, avatar, email, password: hash });
+    return res.status(201).json({ _id: newUser._id, email });
   } catch (e) {
     if (e.name === 'ValidationError') {
       const errors = Object.values(e.errors).map((err) => err.message);
@@ -105,10 +108,36 @@ const upDateUserAvatar = async (req, res) => {
   }
 };
 
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ message: 'Неправильные почта или пароль' });
+    }
+    const isLogged = await bcryptjs.compare(password, user.password);
+    if (!isLogged) {
+      return res.status(401).json({ message: 'Неправильные почта или пароль' });
+    }
+    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+    return res
+      .status(201)
+      .cookie('token', token, {
+        maxAge: 3600000 * 24 * 7,
+        httpOnly: true,
+        sameSite: true,
+      })
+      .json({ message: 'Токен передан в cookie' });
+  } catch (e) {
+    return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
+  }
+};
+
 module.exports = {
   getUser,
   getUsers,
   createUser,
   upDateUserData,
   upDateUserAvatar,
+  login,
 };
