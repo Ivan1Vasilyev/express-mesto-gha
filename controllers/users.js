@@ -41,6 +41,27 @@ const getUser = async (req, res) => {
   }
 };
 
+const getUserData = async (req, res) => {
+  const { authorization } = req.headers;
+
+  if (!authorization || !authorization.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'Необходима авторизация' });
+  }
+
+  const token = authorization.replace(/^Bearer\s/, '');
+
+  try {
+    const userId = jwt.verify(token, JWT_SECRET).id;
+
+    if (!userId) return res.status(401).json({ message: 'Авторизуйтесь' });
+
+    const { _id, name, about, email, avatar } = await User.findById(userId);
+    return res.status(201).json({ _id, name, about, email, avatar });
+  } catch (err) {
+    return res.status(401).json({ message: 'Необходима авторизация' });
+  }
+};
+
 const createUser = async (req, res) => {
   try {
     const hash = await bcryptjs.hash(req.body.password, 10);
@@ -140,4 +161,5 @@ module.exports = {
   upDateUserData,
   upDateUserAvatar,
   login,
+  getUserData,
 };
