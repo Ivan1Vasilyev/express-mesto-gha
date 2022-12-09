@@ -14,5 +14,5 @@ node_modules
 .DS_Store
 .idea
 .vscode
+secret.env
 .prettierrc
-.env
