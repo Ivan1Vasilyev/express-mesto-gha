@@ -19,7 +19,7 @@ const getCards = async (req, res) => {
 
 const createCard = async (req, res) => {
   try {
-    const newCard = await Card.create({ owner: req.user._id, ...req.body });
+    const newCard = await Card.create({ owner: req.user.id, ...req.body });
     return res.status(201).json(newCard);
   } catch (e) {
     if (e.name === 'ValidationError') {
@@ -31,6 +31,11 @@ const createCard = async (req, res) => {
 };
 
 const deleteCard = async (req, res) => {
+  const deletingCard = await Card.findById(req.params.cardId);
+  if (req.user.id !== String(deletingCard.owner)) {
+    return res.status(401).json({ message: 'Вы не можете удалить чужую карточку' });
+  }
+
   try {
     const response = await Card.findByIdAndRemove(req.params.cardId);
     if (!response) {

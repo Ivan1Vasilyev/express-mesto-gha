@@ -15,4 +15,4 @@ node_modules
 .idea
 .vscode
 .prettierrc
-cryptokey.env
+.env
