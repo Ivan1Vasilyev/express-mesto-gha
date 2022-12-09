@@ -7,6 +7,7 @@ const {
   NOT_CORRECT_MESSAGE,
   NOT_EXISTS_MESSAGE,
 } = require('../utils/constants');
+const bcryptjs = require('bcryptjs');
 
 const getUsers = async (req, res) => {
   try {
@@ -39,8 +40,9 @@ const getUser = async (req, res) => {
 
 const createUser = async (req, res) => {
   try {
-    const { name, about, avatar } = req.body;
-    const newUser = await User.create({ name, about, avatar });
+    const password = bcryptjs.hash(req.body.password, 10);
+    const { name, about, avatar, email } = req.body;
+    const newUser = await User.create({ name, about, avatar, email, password });
     return res.status(201).json(newUser);
   } catch (e) {
     if (e.name === 'ValidationError') {
