@@ -19,7 +19,7 @@ app.use('/users', userRouter);
 app.use('/cards', cardRouter);
 app.use('*', (req, res) => res.status(NOT_EXISTS).json({ message: NOT_EXISTS_MESSAGE }));
 
-mongoose.connect('mongodb://localhost:27017/mestodb', { useNewUrlParser: true }, () => {
+mongoose.connect('mongodb://127.0.0.1:27017/mestodb', { useNewUrlParser: true }, () => {
   console.log('connected to MongoDB');
   app.listen(PORT, () => {
     console.log(`connected to port: ${PORT}`);
