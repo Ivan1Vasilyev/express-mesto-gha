@@ -12,7 +12,7 @@ const cardRouter = require('./routes/cards');
 const { DEFAULT_ERROR, NOT_EXISTS_MESSAGE } = require('./utils/constants');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
-const { NotFoundError } = require('./utils/errors');
+const NotFoundError = require('./errors/not-found');
 
 const { PORT = 3000 } = process.env;
 
@@ -51,7 +51,7 @@ app.use(errors());
 
 app.use((err, req, res) => {
   const { statusCode = DEFAULT_ERROR, message } = err;
-
+  console.log('!');
   return res
     .status(statusCode)
     .send({ message: statusCode === DEFAULT_ERROR ? 'На сервере произошла ошибка' : message });

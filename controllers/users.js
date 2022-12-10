@@ -3,12 +3,10 @@ const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/users');
 const { NOT_CORRECT_MESSAGE, NOT_EXISTS_MESSAGE } = require('../utils/constants');
-const {
-  NotFoundError,
-  NotValidError,
-  NotAuthorizedError,
-  SameEmailError,
-} = require('../utils/errors');
+const NotFoundError = require('../errors/not-found');
+const NotValidError = require('../errors/not-valid');
+const NotAuthorizedError = require('../errors/not-authorized');
+const SameEmailError = require('../errors/same-email');
 
 const { JWT_SECRET } = process.env;
 
@@ -42,7 +40,7 @@ const getUser = async (req, res, next) => {
 
 const getUserData = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user._id);
     if (!user) {
       throw new NotFoundError(`${NOT_EXISTS_MESSAGE}: Пользователь не найден.`);
     }
@@ -136,7 +134,7 @@ const login = async (req, res, next) => {
     if (!isLogged) {
       throw new NotAuthorizedError('Неправильные почта или пароль');
     }
-    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
     return res
       .status(201)
       .cookie('jwt', token, {

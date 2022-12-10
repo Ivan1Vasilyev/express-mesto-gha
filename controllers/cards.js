@@ -1,7 +1,9 @@
 /* eslint-disable consistent-return */
 const Card = require('../models/cards');
 const { NOT_CORRECT_MESSAGE, NOT_EXISTS_MESSAGE } = require('../utils/constants');
-const { NotFoundError, NotValidError, NotAuthorizedError } = require('../utils/errors');
+const NotFoundError = require('../errors/not-found');
+const NotValidError = require('../errors/not-valid');
+const NotAuthorizedError = require('../errors/not-authorized');
 
 const getCards = async (req, res, next) => {
   try {
