@@ -49,12 +49,13 @@ app.use('*', (req, res, next) => {
 });
 app.use(errors());
 
-app.use((err, req, res) => {
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
   const { statusCode = DEFAULT_ERROR, message } = err;
-  console.log('!');
+  console.log('!1234567!');
   return res
     .status(statusCode)
-    .send({ message: statusCode === DEFAULT_ERROR ? 'На сервере произошла ошибка' : message });
+    .json({ message: statusCode === DEFAULT_ERROR ? 'На сервере произошла ошибка' : message });
 });
 
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb', { useNewUrlParser: true }, () => {
