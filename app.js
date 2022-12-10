@@ -6,6 +6,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const { celebrate, Joi, errors } = require('celebrate');
 const userRouter = require('./routes/users');
 const cardRouter = require('./routes/cards');
 const { DEFAULT_ERROR, NOT_EXISTS_MESSAGE } = require('./utils/constants');
@@ -19,8 +20,26 @@ const app = express();
 
 app.use(cookieParser());
 app.use(bodyParser.json());
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post(
+  '/signin',
+  celebrate({
+    body: Joi.object().keys({
+      email: Joi.string().required().email({ minDomainSegments: 2 }),
+      password: Joi.string().required().min(4),
+    }),
+  }),
+  login,
+);
+app.post(
+  '/signup',
+  celebrate({
+    body: Joi.object().keys({
+      email: Joi.string().required().email({ minDomainSegments: 2 }),
+      password: Joi.string().required(),
+    }),
+  }),
+  createUser,
+);
 app.use(auth);
 app.use('/users', userRouter);
 app.use('/cards', cardRouter);
@@ -28,6 +47,7 @@ app.use('*', (req, res, next) => {
   const err = new NotFoundError(NOT_EXISTS_MESSAGE);
   next(err);
 });
+app.use(errors());
 
 app.use((err, req, res) => {
   const { statusCode = DEFAULT_ERROR, message } = err;
