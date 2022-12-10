@@ -42,23 +42,11 @@ const getUser = async (req, res) => {
 };
 
 const getUserData = async (req, res) => {
-  const { authorization } = req.headers;
-
-  if (!authorization || !authorization.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'Необходима авторизация' });
-  }
-
-  const token = authorization.replace(/^Bearer\s/, '');
-
   try {
-    const userId = jwt.verify(token, JWT_SECRET).id;
-
-    if (!userId) return res.status(401).json({ message: 'Авторизуйтесь' });
-
-    const { _id, name, about, email, avatar } = await User.findById(userId);
-    return res.status(201).json({ _id, name, about, email, avatar });
+    const user = await User.findById(req.user.id);
+    return res.status(201).json(user);
   } catch (err) {
-    return res.status(401).json({ message: 'Необходима авторизация' });
+    return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
   }
 };
 
@@ -132,7 +120,7 @@ const upDateUserAvatar = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select('+password');
     if (!user) {
       return res.status(401).json({ message: 'Неправильные почта или пароль' });
     }
@@ -143,12 +131,12 @@ const login = async (req, res) => {
     const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
     return res
       .status(201)
-      .cookie('token', token, {
+      .cookie('jwt', token, {
         maxAge: 3600000 * 24 * 7,
         httpOnly: true,
         sameSite: true,
       })
-      .json({ message: 'Токен передан в cookie' });
+      .json({ message: 'Токен jwt передан в cookie' });
   } catch (e) {
     return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
   }
