@@ -1,56 +1,58 @@
+/* eslint-disable consistent-return */
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/users');
+const { NOT_CORRECT_MESSAGE, NOT_EXISTS_MESSAGE } = require('../utils/constants');
 const {
-  DEFAULT_ERROR,
-  NOT_CORRECT,
-  NOT_EXISTS,
-  DEFAULT_ERROR_MESSAGE,
-  NOT_CORRECT_MESSAGE,
-  NOT_EXISTS_MESSAGE,
-} = require('../utils/constants');
+  NotFoundError,
+  NotValidError,
+  NotAuthorizedError,
+  SameEmailError,
+} = require('../utils/errors');
 
 const { JWT_SECRET } = process.env;
 
-const getUsers = async (req, res) => {
+const getUsers = async (req, res, next) => {
   try {
     const users = await User.find({});
     return res.json(users);
   } catch (e) {
-    return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
+    next(e);
   }
 };
 
-const getUser = async (req, res) => {
+const getUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
     const user = await User.findById(userId);
 
     if (!user) {
-      return res
-        .status(NOT_EXISTS)
-        .json({ message: `${NOT_EXISTS_MESSAGE}: Пользователь не найден.` });
+      throw new NotFoundError(`${NOT_EXISTS_MESSAGE}: Пользователь не найден.`);
     }
 
     return res.json(user);
   } catch (e) {
     if (e.name === 'CastError') {
-      return res.status(NOT_CORRECT).json({ message: `${NOT_CORRECT_MESSAGE}: Некорректный id.` });
+      const err = new NotValidError(`${NOT_CORRECT_MESSAGE}: Некорректный id`);
+      next(err);
     }
-    return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
+    next(e);
   }
 };
 
-const getUserData = async (req, res) => {
+const getUserData = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
+    if (!user) {
+      throw new NotFoundError(`${NOT_EXISTS_MESSAGE}: Пользователь не найден.`);
+    }
     return res.status(201).json(user);
-  } catch (err) {
-    return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
+  } catch (e) {
+    next(e);
   }
 };
 
-const createUser = async (req, res) => {
+const createUser = async (req, res, next) => {
   try {
     const hash = await bcryptjs.hash(req.body.password, 10);
     const { name, about, avatar, email } = req.body;
@@ -58,14 +60,20 @@ const createUser = async (req, res) => {
     return res.status(201).json({ _id: newUser._id, email });
   } catch (e) {
     if (e.name === 'ValidationError') {
-      const errors = Object.values(e.errors).map((err) => err.message);
-      return res.status(NOT_CORRECT).json({ message: errors.join(', ') });
+      const messages = Object.values(e.errors)
+        .map((err) => err.message)
+        .join(', ');
+      const err = new NotValidError(messages);
+      next(err);
+    } else if (e.code === 11000) {
+      const err = new SameEmailError('Пользователь с таким email уже зарегистрирован');
+      next(err);
     }
-    return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
+    next(e);
   }
 };
 
-const upDateUserData = async (req, res) => {
+const upDateUserData = async (req, res, next) => {
   try {
     const { name, about } = req.body;
     const updatedUser = await User.findByIdAndUpdate(
@@ -75,22 +83,22 @@ const upDateUserData = async (req, res) => {
     );
 
     if (!updatedUser) {
-      return res
-        .status(NOT_EXISTS)
-        .json({ message: `${NOT_EXISTS_MESSAGE}: Пользователь не найден.` });
+      throw new NotFoundError(`${NOT_EXISTS_MESSAGE}: Пользователь не найден.`);
     }
 
     return res.json(updatedUser);
   } catch (e) {
     if (e.name === 'ValidationError') {
-      const errors = Object.values(e.errors).map((err) => err.message);
-      return res.status(NOT_CORRECT).json({ message: errors.join(', ') });
+      const messages = Object.values(e.errors)
+        .map((err) => err.message)
+        .join(', ');
+      next(new NotValidError(messages));
     }
-    return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
+    next(e);
   }
 };
 
-const upDateUserAvatar = async (req, res) => {
+const upDateUserAvatar = async (req, res, next) => {
   try {
     const updatedUser = await User.findByIdAndUpdate(
       req.user._id,
@@ -102,31 +110,31 @@ const upDateUserAvatar = async (req, res) => {
     );
 
     if (!updatedUser) {
-      return res
-        .status(NOT_EXISTS)
-        .json({ message: `${NOT_EXISTS_MESSAGE}: Пользователь не найден.` });
+      throw new NotFoundError(`${NOT_EXISTS_MESSAGE}: Пользователь не найден.`);
     }
 
     return res.json(updatedUser);
   } catch (e) {
     if (e.name === 'ValidationError') {
-      const errors = Object.values(e.errors).map((err) => err.message);
-      return res.status(NOT_CORRECT).json({ message: errors.join(', ') });
+      const messages = Object.values(e.errors)
+        .map((err) => err.message)
+        .join(', ');
+      next(new NotValidError(messages));
     }
-    return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
+    next(e);
   }
 };
 
-const login = async (req, res) => {
+const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
-      return res.status(401).json({ message: 'Неправильные почта или пароль' });
+      throw new NotAuthorizedError('Неправильные почта или пароль');
     }
     const isLogged = await bcryptjs.compare(password, user.password);
     if (!isLogged) {
-      return res.status(401).json({ message: 'Неправильные почта или пароль' });
+      throw new NotAuthorizedError('Неправильные почта или пароль');
     }
     const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
     return res
@@ -138,7 +146,7 @@ const login = async (req, res) => {
       })
       .json({ message: 'Токен jwt передан в cookie' });
   } catch (e) {
-    return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
+    next(e);
   }
 };
 

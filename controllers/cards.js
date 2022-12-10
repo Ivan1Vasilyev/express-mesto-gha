@@ -1,60 +1,55 @@
+/* eslint-disable consistent-return */
 const Card = require('../models/cards');
-const {
-  DEFAULT_ERROR,
-  NOT_CORRECT,
-  NOT_EXISTS,
-  DEFAULT_ERROR_MESSAGE,
-  NOT_CORRECT_MESSAGE,
-  NOT_EXISTS_MESSAGE,
-} = require('../utils/constants');
+const { NOT_CORRECT_MESSAGE, NOT_EXISTS_MESSAGE } = require('../utils/constants');
+const { NotFoundError, NotValidError, NotAuthorizedError } = require('../utils/errors');
 
-const getCards = async (req, res) => {
+const getCards = async (req, res, next) => {
   try {
     const cards = await Card.find({});
     return res.json(cards);
   } catch (e) {
-    return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
+    next(e);
   }
 };
 
-const createCard = async (req, res) => {
+const createCard = async (req, res, next) => {
   try {
     const newCard = await Card.create({ owner: req.user.id, ...req.body });
     return res.status(201).json(newCard);
   } catch (e) {
     if (e.name === 'ValidationError') {
-      const errors = Object.values(e.errors).map((err) => err.message);
-      return res.status(NOT_CORRECT).json({ message: errors.join(', ') });
+      const messages = Object.values(e.errors)
+        .map((err) => err.message)
+        .join(', ');
+      const err = new NotValidError(messages);
+      next(err);
     }
-    return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
+    next(e);
   }
 };
 
-const deleteCard = async (req, res) => {
-  const deletingCard = await Card.findById(req.params.cardId);
-  if (req.user.id !== String(deletingCard.owner)) {
-    return res.status(401).json({ message: 'Вы не можете удалить чужую карточку' });
-  }
-
+const deleteCard = async (req, res, next) => {
   try {
+    const deletingCard = await Card.findById(req.params.cardId);
+    if (req.user.id !== String(deletingCard.owner)) {
+      throw new NotAuthorizedError('Вы не можете удалить чужую карточку');
+    }
+
     const response = await Card.findByIdAndRemove(req.params.cardId);
     if (!response) {
-      return res
-        .status(NOT_EXISTS)
-        .json({ message: `${NOT_EXISTS_MESSAGE}: Несуществующий id карточки` });
+      throw new NotFoundError(`${NOT_EXISTS_MESSAGE}: Несуществующий id карточки`);
     }
     return res.json(response);
   } catch (e) {
     if (e.name === 'CastError') {
-      return res
-        .status(NOT_CORRECT)
-        .json({ message: `${NOT_CORRECT_MESSAGE}: Некорректный id карточки` });
+      const err = new NotValidError(`${NOT_CORRECT_MESSAGE}: Некорректный id карточки`);
+      next(err);
     }
-    return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
+    next(e);
   }
 };
 
-const likeCard = async (req, res) => {
+const likeCard = async (req, res, next) => {
   try {
     const likedCard = await Card.findByIdAndUpdate(
       req.params.cardId,
@@ -62,22 +57,19 @@ const likeCard = async (req, res) => {
       { new: true },
     );
     if (!likedCard) {
-      return res
-        .status(NOT_EXISTS)
-        .json({ message: `${NOT_EXISTS_MESSAGE}: Несуществующий id карточки` });
+      throw new NotFoundError(`${NOT_EXISTS_MESSAGE}: Несуществующий id карточки`);
     }
     return res.status(201).json(likedCard);
   } catch (e) {
     if (e.name === 'CastError') {
-      return res
-        .status(NOT_CORRECT)
-        .json({ message: `${NOT_CORRECT_MESSAGE}: Некорректный id карточки` });
+      const err = new NotValidError(`${NOT_CORRECT_MESSAGE}: Некорректный id карточки`);
+      next(err);
     }
-    return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
+    next(e);
   }
 };
 
-const dislikeCard = async (req, res) => {
+const dislikeCard = async (req, res, next) => {
   try {
     const disLikedCard = await Card.findByIdAndUpdate(
       req.params.cardId,
@@ -85,18 +77,15 @@ const dislikeCard = async (req, res) => {
       { new: true },
     );
     if (!disLikedCard) {
-      return res
-        .status(NOT_EXISTS)
-        .json({ message: `${NOT_EXISTS_MESSAGE}: Несуществующий id карточки` });
+      throw new NotFoundError(`${NOT_EXISTS_MESSAGE}: Несуществующий id карточки`);
     }
     return res.json(disLikedCard);
   } catch (e) {
     if (e.name === 'CastError') {
-      return res
-        .status(NOT_CORRECT)
-        .json({ message: `${NOT_CORRECT_MESSAGE}: Некорректный id карточки` });
+      const err = new NotValidError(`${NOT_CORRECT_MESSAGE}: Некорректный id карточки`);
+      next(err);
     }
-    return res.status(DEFAULT_ERROR).json({ message: DEFAULT_ERROR_MESSAGE });
+    next(e);
   }
 };
 
