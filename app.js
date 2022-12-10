@@ -13,6 +13,7 @@ const { DEFAULT_ERROR, NOT_EXISTS_MESSAGE } = require('./utils/constants');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const NotFoundError = require('./errors/not-found');
+const { REGEXP_URL } = require('./utils/constants');
 
 const { PORT = 3000 } = process.env;
 
@@ -36,6 +37,9 @@ app.post(
     body: Joi.object().keys({
       email: Joi.string().required().email({ minDomainSegments: 2 }),
       password: Joi.string().required(),
+      name: Joi.string().required().min(2).max(30),
+      about: Joi.string().required().min(2).max(30),
+      avatar: Joi.string().required().pattern(REGEXP_URL),
     }),
   }),
   createUser,
