@@ -54,8 +54,8 @@ const createUser = async (req, res, next) => {
   try {
     const hash = await bcryptjs.hash(req.body.password, 10);
     const { name, about, avatar, email } = req.body;
-    const newUser = await User.create({ name, about, avatar, email, password: hash });
-    return res.status(201).json({ newUser });
+    await User.create({ name, about, avatar, email, password: hash });
+    return res.status(201).json({ name, about, avatar, email });
   } catch (e) {
     if (e.name === 'ValidationError') {
       const messages = Object.values(e.errors)
