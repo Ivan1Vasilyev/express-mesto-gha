@@ -18,7 +18,11 @@ const getCards = async (req, res, next) => {
 const createCard = async (req, res, next) => {
   try {
     const { name, link } = req.body;
-    const newCard = await Card.create({ owner: req.user._id, name: escape(name), link });
+    const newCard = await Card.create({
+      owner: req.user._id,
+      name: name ? escape(name) : name,
+      link,
+    });
     return res.status(201).json(newCard);
   } catch (e) {
     if (e.name === 'ValidationError') {
