@@ -1,9 +1,8 @@
-/* eslint-disable consistent-return */
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const escape = require('escape-html');
 const User = require('../models/users');
-const { NOT_CORRECT_MESSAGE, NOT_EXISTS_MESSAGE } = require('../utils/constants');
+const { NOT_CORRECT_MESSAGE, NOT_EXISTS_MESSAGE, CREATED_CODE } = require('../utils/constants');
 const NotFoundError = require('../errors/not-found');
 const NotValidError = require('../errors/not-valid');
 const NotAuthorizedError = require('../errors/not-authorized');
@@ -16,7 +15,7 @@ const getUsers = async (req, res, next) => {
     const users = await User.find({});
     return res.json(users);
   } catch (e) {
-    next(e);
+    return next(e);
   }
 };
 
@@ -26,16 +25,16 @@ const getUser = async (req, res, next) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      throw new NotFoundError(`${NOT_EXISTS_MESSAGE}: Пользователь не найден.`);
+      return next(new NotFoundError(`${NOT_EXISTS_MESSAGE}: Пользователь не найден.`));
     }
 
     return res.json(user);
   } catch (e) {
     if (e.name === 'CastError') {
       const err = new NotValidError(`${NOT_CORRECT_MESSAGE}: Некорректный id`);
-      next(err);
+      return next(err);
     }
-    next(e);
+    return next(e);
   }
 };
 
@@ -43,11 +42,11 @@ const getUserData = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id);
     if (!user) {
-      throw new NotFoundError(`${NOT_EXISTS_MESSAGE}: Пользователь не найден.`);
+      return next(new NotFoundError(`${NOT_EXISTS_MESSAGE}: Пользователь не найден.`));
     }
     return res.json(user);
   } catch (e) {
-    next(e);
+    return next(e);
   }
 };
 
@@ -62,7 +61,9 @@ const createUser = async (req, res, next) => {
       email,
       password: hash,
     });
-    return res.status(201).json({
+    // delete newUser.password;
+    // console.log(newUser);
+    return res.status(CREATED_CODE).json({
       name: newUser.name,
       about: newUser.about,
       avatar: newUser.avatar,
@@ -74,13 +75,12 @@ const createUser = async (req, res, next) => {
       const messages = Object.values(e.errors)
         .map((err) => err.message)
         .join(', ');
-      const err = new NotValidError(messages);
-      next(err);
-    } else if (e.code === 11000) {
-      const err = new SameEmailError('Пользователь с таким email уже зарегистрирован');
-      next(err);
+      return next(new NotValidError(messages));
     }
-    next(e);
+    if (e.code === 11000) {
+      return next(new SameEmailError('Пользователь с таким email уже зарегистрирован'));
+    }
+    return next(e);
   }
 };
 
@@ -94,7 +94,7 @@ const upDateUserData = async (req, res, next) => {
     );
 
     if (!updatedUser) {
-      throw new NotFoundError(`${NOT_EXISTS_MESSAGE}: Пользователь не найден.`);
+      return next(new NotFoundError(`${NOT_EXISTS_MESSAGE}: Пользователь не найден.`));
     }
 
     return res.json(updatedUser);
@@ -103,9 +103,9 @@ const upDateUserData = async (req, res, next) => {
       const messages = Object.values(e.errors)
         .map((err) => err.message)
         .join(', ');
-      next(new NotValidError(messages));
+      return next(new NotValidError(messages));
     }
-    next(e);
+    return next(e);
   }
 };
 
@@ -121,7 +121,7 @@ const upDateUserAvatar = async (req, res, next) => {
     );
 
     if (!updatedUser) {
-      throw new NotFoundError(`${NOT_EXISTS_MESSAGE}: Пользователь не найден.`);
+      return next(new NotFoundError(`${NOT_EXISTS_MESSAGE}: Пользователь не найден.`));
     }
 
     return res.json(updatedUser);
@@ -130,9 +130,9 @@ const upDateUserAvatar = async (req, res, next) => {
       const messages = Object.values(e.errors)
         .map((err) => err.message)
         .join(', ');
-      next(new NotValidError(messages));
+      return next(new NotValidError(messages));
     }
-    next(e);
+    return next(e);
   }
 };
 
@@ -141,22 +141,22 @@ const login = async (req, res, next) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
-      throw new NotAuthorizedError('Неправильные почта или пароль');
+      return next(new NotAuthorizedError('Неправильные почта или пароль'));
     }
     const isLogged = await bcryptjs.compare(password, user.password);
     if (!isLogged) {
-      throw new NotAuthorizedError('Неправильные почта или пароль');
+      return next(new NotAuthorizedError('Неправильные почта или пароль'));
     }
     const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
     return res
-      .cookie('jwt', `Bearer ${token}`, {
+      .cookie('jwt', token, {
         maxAge: 3600000 * 24 * 7,
         httpOnly: true,
         sameSite: true,
       })
       .json({ message: 'Токен jwt передан в cookie' });
   } catch (e) {
-    next(e);
+    return next(e);
   }
 };
 

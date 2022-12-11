@@ -1,7 +1,6 @@
-/* eslint-disable consistent-return */
 const escape = require('escape-html');
 const Card = require('../models/cards');
-const { NOT_CORRECT_MESSAGE, NOT_EXISTS_MESSAGE } = require('../utils/constants');
+const { NOT_CORRECT_MESSAGE, NOT_EXISTS_MESSAGE, CREATED_CODE } = require('../utils/constants');
 const NotFoundError = require('../errors/not-found');
 const NotValidError = require('../errors/not-valid');
 const NotAcceptedError = require('../errors/not-accepted');
@@ -11,7 +10,7 @@ const getCards = async (req, res, next) => {
     const cards = await Card.find({});
     return res.json(cards);
   } catch (e) {
-    next(e);
+    return next(e);
   }
 };
 
@@ -23,16 +22,15 @@ const createCard = async (req, res, next) => {
       name: name ? escape(name) : name,
       link,
     });
-    return res.status(201).json(newCard);
+    return res.status(CREATED_CODE).json(newCard);
   } catch (e) {
     if (e.name === 'ValidationError') {
       const messages = Object.values(e.errors)
         .map((err) => err.message)
         .join(', ');
-      const err = new NotValidError(messages);
-      next(err);
+      return next(new NotValidError(messages));
     }
-    next(e);
+    return next(e);
   }
 };
 
@@ -40,22 +38,21 @@ const deleteCard = async (req, res, next) => {
   try {
     const deletingCard = await Card.findById(req.params.cardId);
     if (!deletingCard) {
-      throw new NotFoundError(`${NOT_EXISTS_MESSAGE}: Несуществующий id карточки`);
+      return next(new NotFoundError(`${NOT_EXISTS_MESSAGE}: Несуществующий id карточки`));
     }
 
     if (req.user._id !== String(deletingCard.owner)) {
-      throw new NotAcceptedError('Вы не можете удалить чужую карточку');
+      return next(new NotAcceptedError('Вы не можете удалить чужую карточку'));
     }
 
-    const response = await Card.findByIdAndRemove(req.params.cardId);
+    deletingCard.remove();
 
-    return res.json(response);
+    return res.json(deletingCard);
   } catch (e) {
     if (e.name === 'CastError') {
-      const err = new NotValidError(`${NOT_CORRECT_MESSAGE}: Некорректный id карточки`);
-      next(err);
+      return next(new NotValidError(`${NOT_CORRECT_MESSAGE}: Некорректный id карточки`));
     }
-    next(e);
+    return next(e);
   }
 };
 
@@ -67,15 +64,14 @@ const likeCard = async (req, res, next) => {
       { new: true },
     );
     if (!likedCard) {
-      throw new NotFoundError(`${NOT_EXISTS_MESSAGE}: Несуществующий id карточки`);
+      return next(new NotFoundError(`${NOT_EXISTS_MESSAGE}: Несуществующий id карточки`));
     }
-    return res.status(201).json(likedCard);
+    return res.status(CREATED_CODE).json(likedCard);
   } catch (e) {
     if (e.name === 'CastError') {
-      const err = new NotValidError(`${NOT_CORRECT_MESSAGE}: Некорректный id карточки`);
-      next(err);
+      return next(new NotValidError(`${NOT_CORRECT_MESSAGE}: Некорректный id карточки`));
     }
-    next(e);
+    return next(e);
   }
 };
 
@@ -87,15 +83,14 @@ const dislikeCard = async (req, res, next) => {
       { new: true },
     );
     if (!disLikedCard) {
-      throw new NotFoundError(`${NOT_EXISTS_MESSAGE}: Несуществующий id карточки`);
+      return next(new NotFoundError(`${NOT_EXISTS_MESSAGE}: Несуществующий id карточки`));
     }
     return res.json(disLikedCard);
   } catch (e) {
     if (e.name === 'CastError') {
-      const err = new NotValidError(`${NOT_CORRECT_MESSAGE}: Некорректный id карточки`);
-      next(err);
+      return next(new NotValidError(`${NOT_CORRECT_MESSAGE}: Некорректный id карточки`));
     }
-    next(e);
+    return next(e);
   }
 };
 
