@@ -62,7 +62,7 @@ const createUser = async (req, res, next) => {
       password: hash,
     });
     // delete newUser.password;
-    // console.log(newUser);
+    console.log(newUser);
     return res.status(CREATED_CODE).json({
       name: newUser.name,
       about: newUser.about,
@@ -80,6 +80,7 @@ const createUser = async (req, res, next) => {
     if (e.code === 11000) {
       return next(new SameEmailError('Пользователь с таким email уже зарегистрирован'));
     }
+    console.log('!');
     return next(e);
   }
 };

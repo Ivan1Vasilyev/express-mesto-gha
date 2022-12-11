@@ -7,7 +7,7 @@ const NotAcceptedError = require('../errors/not-accepted');
 
 const getCards = async (req, res, next) => {
   try {
-    const cards = await Card.find({});
+    const cards = await Card.find({}).populate(['owner', 'likes']);
     return res.json(cards);
   } catch (e) {
     return next(e);
@@ -36,7 +36,7 @@ const createCard = async (req, res, next) => {
 
 const deleteCard = async (req, res, next) => {
   try {
-    const deletingCard = await Card.findById(req.params.cardId);
+    const deletingCard = await Card.findById(req.params.cardId).populate(['owner', 'likes']);
     if (!deletingCard) {
       return next(new NotFoundError(`${NOT_EXISTS_MESSAGE}: Несуществующий id карточки`));
     }
@@ -62,7 +62,7 @@ const likeCard = async (req, res, next) => {
       req.params.cardId,
       { $addToSet: { likes: req.user._id } },
       { new: true },
-    );
+    ).populate(['owner', 'likes']);
     if (!likedCard) {
       return next(new NotFoundError(`${NOT_EXISTS_MESSAGE}: Несуществующий id карточки`));
     }
@@ -81,7 +81,7 @@ const dislikeCard = async (req, res, next) => {
       req.params.cardId,
       { $pull: { likes: req.user._id } },
       { new: true },
-    );
+    ).populate(['owner', 'likes']);
     if (!disLikedCard) {
       return next(new NotFoundError(`${NOT_EXISTS_MESSAGE}: Несуществующий id карточки`));
     }
