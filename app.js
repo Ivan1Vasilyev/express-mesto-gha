@@ -1,10 +1,8 @@
-/* eslint-disable no-console */
 const dotenv = require('dotenv');
 
 dotenv.config();
 const express = require('express');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -29,7 +27,7 @@ const limiter = rateLimit({
 app.use(helmet());
 app.use(limiter);
 app.use(cookieParser());
-app.use(bodyParser.json());
+app.use(express.json());
 app.post(
   '/signin',
   celebrate({
@@ -70,7 +68,11 @@ app.use((err, req, res, next) => {
     .json({ message: statusCode === DEFAULT_ERROR ? 'На сервере произошла ошибка' : message });
 });
 
-mongoose.connect('mongodb://127.0.0.1:27017/mestodb', { useNewUrlParser: true }, () => {
+mongoose.connect('mongodb://127.0.0.1:27017/mestodb', { useNewUrlParser: true }, (err) => {
+  if (err) {
+    console.log(`Can't connect to MongoDB. ${err}`);
+    return;
+  }
   console.log('connected to MongoDB');
   app.listen(PORT, () => {
     console.log(`connected to port: ${PORT}`);
