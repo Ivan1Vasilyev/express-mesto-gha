@@ -1,6 +1,7 @@
 /* eslint-disable consistent-return */
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const escape = require('escape-html');
 const User = require('../models/users');
 const { NOT_CORRECT_MESSAGE, NOT_EXISTS_MESSAGE } = require('../utils/constants');
 const NotFoundError = require('../errors/not-found');
@@ -54,7 +55,13 @@ const createUser = async (req, res, next) => {
   try {
     const hash = await bcryptjs.hash(req.body.password, 10);
     const { name, about, avatar, email } = req.body;
-    const newUser = await User.create({ name, about, avatar, email, password: hash });
+    const newUser = await User.create({
+      name: escape(name),
+      about: escape(about),
+      avatar,
+      email,
+      password: hash,
+    });
     return res.status(201).json({
       name: newUser.name,
       about: newUser.about,
@@ -82,7 +89,7 @@ const upDateUserData = async (req, res, next) => {
     const { name, about } = req.body;
     const updatedUser = await User.findByIdAndUpdate(
       req.user._id,
-      { name, about },
+      { name: escape(name), about: escape(about) },
       { runValidators: true, new: true },
     );
 

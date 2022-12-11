@@ -1,4 +1,5 @@
 /* eslint-disable consistent-return */
+const escape = require('escape-html');
 const Card = require('../models/cards');
 const { NOT_CORRECT_MESSAGE, NOT_EXISTS_MESSAGE } = require('../utils/constants');
 const NotFoundError = require('../errors/not-found');
@@ -16,7 +17,8 @@ const getCards = async (req, res, next) => {
 
 const createCard = async (req, res, next) => {
   try {
-    const newCard = await Card.create({ owner: req.user._id, ...req.body });
+    const { name, link } = req.body;
+    const newCard = await Card.create({ owner: req.user._id, name: escape(name), link });
     return res.status(201).json(newCard);
   } catch (e) {
     if (e.name === 'ValidationError') {
