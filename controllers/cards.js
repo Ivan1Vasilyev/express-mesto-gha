@@ -17,6 +17,7 @@ const getCards = async (req, res, next) => {
 const createCard = async (req, res, next) => {
   try {
     const { name, link } = req.body;
+    console.log(req.body);
     const newCard = await Card.create({
       owner: req.user._id,
       name: name ? escape(name) : name,
@@ -30,6 +31,7 @@ const createCard = async (req, res, next) => {
         .join(', ');
       return next(new NotValidError(messages));
     }
+    console.log(e);
     return next(e);
   }
 };

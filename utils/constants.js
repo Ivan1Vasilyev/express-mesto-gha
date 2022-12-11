@@ -5,7 +5,7 @@ const NOT_CORRECT_MESSAGE = 'Некорректные данные';
 const NOT_EXISTS_MESSAGE = 'Несуществующий путь';
 
 // eslint-disable-next-line no-useless-escape
-const REGEXP_URL = /^https?:\/\/(www.)?[-\.:\/\?#\[\]@!$&%'\(\)\*_\+~,;=a-zA-Z0-9]+$/;
+const REGEXP_URL = /^https?:\/\/(www.)?[-.:\/\?#\[\]@!$&%'()_+~,;=a-zA-Z0-9]+$/;
 module.exports = {
   CREATED_CODE,
   DEFAULT_ERROR,

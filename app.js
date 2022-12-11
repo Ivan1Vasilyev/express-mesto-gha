@@ -13,7 +13,7 @@ const { DEFAULT_ERROR, NOT_EXISTS_MESSAGE } = require('./utils/constants');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const NotFoundError = require('./errors/not-found');
-const { REGEXP_URL } = require('./utils/constants');
+const { joiNameOrAbout, joiUrl, joiEmail, joiPassword } = require('./utils/joi-validators');
 
 const { PORT = 3000 } = process.env;
 
@@ -32,8 +32,8 @@ app.post(
   '/signin',
   celebrate({
     body: Joi.object().keys({
-      email: Joi.string().required().email({ minDomainSegments: 2 }),
-      password: Joi.string().required().min(4),
+      email: joiEmail(),
+      password: joiPassword(),
     }),
   }),
   login,
@@ -42,11 +42,11 @@ app.post(
   '/signup',
   celebrate({
     body: Joi.object().keys({
-      email: Joi.string().required().email({ minDomainSegments: 2 }),
-      password: Joi.string().required(),
-      name: Joi.string().min(2).max(30),
-      about: Joi.string().min(2).max(30),
-      avatar: Joi.string().pattern(REGEXP_URL),
+      email: joiEmail(),
+      password: joiPassword(),
+      name: joiNameOrAbout(),
+      about: joiNameOrAbout(),
+      avatar: joiUrl(),
     }),
   }),
   createUser,

@@ -7,32 +7,20 @@ const {
   upDateUserAvatar,
   getUserData,
 } = require('../controllers/users');
-const { REGEXP_URL } = require('../utils/constants');
+const { joiNameOrAbout, joiUrl, joiId } = require('../utils/joi-validators');
 
 router.get('/', getUsers);
 
 router.get('/me', getUserData);
 
-router.get(
-  '/:userId',
-  celebrate({
-    params: Joi.object().keys({
-      userId: Joi
-        .string()
-        .required()
-        .alphanum()
-        .length(24),
-    }),
-  }),
-  getUser,
-);
+router.get('/:userId', celebrate({ params: Joi.object().keys({ userId: joiId() }) }), getUser);
 
 router.patch(
   '/me',
   celebrate({
     body: Joi.object().keys({
-      name: Joi.string().required().min(2).max(30),
-      about: Joi.string().required().min(2).max(30),
+      name: joiNameOrAbout(true),
+      about: joiNameOrAbout(true),
     }),
   }),
   upDateUserData,
@@ -40,7 +28,7 @@ router.patch(
 
 router.patch(
   '/me/avatar',
-  celebrate({ body: Joi.object().keys({ avatar: Joi.string().required().pattern(REGEXP_URL) }) }),
+  celebrate({ body: Joi.object().keys({ avatar: joiUrl() }) }),
   upDateUserAvatar,
 );
 
