@@ -99,4 +99,10 @@ const dislikeCard = async (req, res, next) => {
   }
 };
 
-module.exports = { deleteCard, getCards, createCard, likeCard, dislikeCard };
+module.exports = {
+  deleteCard,
+  getCards,
+  createCard,
+  likeCard,
+  dislikeCard,
+};

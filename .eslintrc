@@ -6,12 +6,12 @@
       {
         "allow": ["_id"]
       }
+    ],
+    "object-curly-newline": [
+      "error",
+      {
+        "multiline": true
+      }
     ]
-    // "object-curly-newline": [
-    //   "error",
-    //   {
-    //     "multiline": true
-    //   }
-    // ]
   }
 }
