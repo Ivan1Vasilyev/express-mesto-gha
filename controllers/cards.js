@@ -3,7 +3,7 @@ const Card = require('../models/cards');
 const { NOT_CORRECT_MESSAGE, NOT_EXISTS_MESSAGE } = require('../utils/constants');
 const NotFoundError = require('../errors/not-found');
 const NotValidError = require('../errors/not-valid');
-const NotAuthorizedError = require('../errors/not-authorized');
+const NotAcceptedError = require('../errors/not-accepted');
 
 const getCards = async (req, res, next) => {
   try {
@@ -33,16 +33,19 @@ const createCard = async (req, res, next) => {
 const deleteCard = async (req, res, next) => {
   try {
     const deletingCard = await Card.findById(req.params.cardId);
+    if (!deletingCard) {
+      throw new NotFoundError(`${NOT_EXISTS_MESSAGE}: Несуществующий id карточки`);
+    }
+
     if (req.user._id !== String(deletingCard.owner)) {
-      throw new NotAuthorizedError('Вы не можете удалить чужую карточку');
+      throw new NotAcceptedError('Вы не можете удалить чужую карточку');
     }
 
     const response = await Card.findByIdAndRemove(req.params.cardId);
-    if (!response) {
-      throw new NotFoundError(`${NOT_EXISTS_MESSAGE}: Несуществующий id карточки`);
-    }
+
     return res.json(response);
   } catch (e) {
+    // console.log(e.name);
     if (e.name === 'CastError') {
       const err = new NotValidError(`${NOT_CORRECT_MESSAGE}: Некорректный id карточки`);
       next(err);
