@@ -56,7 +56,6 @@ app.use(errors());
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   const { statusCode = DEFAULT_ERROR, message } = err;
-  console.log('!1234567!');
   return res
     .status(statusCode)
     .json({ message: statusCode === DEFAULT_ERROR ? 'На сервере произошла ошибка' : message });
