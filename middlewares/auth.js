@@ -19,7 +19,7 @@ const auth = (req, res, next) => {
       next(err);
     }
 
-    req.user = { _id: payload.id };
+    req.user = { _id: payload._id };
 
     next();
   } catch (e) {

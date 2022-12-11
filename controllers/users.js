@@ -142,7 +142,7 @@ const login = async (req, res, next) => {
     }
     const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
     return res
-      .cookie('jwt', token, {
+      .cookie('jwt', `Bearer ${token}`, {
         maxAge: 3600000 * 24 * 7,
         httpOnly: true,
         sameSite: true,
