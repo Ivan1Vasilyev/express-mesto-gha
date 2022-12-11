@@ -6,6 +6,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
 const { celebrate, Joi, errors } = require('celebrate');
 const userRouter = require('./routes/users');
 const cardRouter = require('./routes/cards');
@@ -19,6 +20,7 @@ const { PORT = 3000 } = process.env;
 
 const app = express();
 
+app.use(helmet());
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.post(
