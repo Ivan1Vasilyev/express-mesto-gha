@@ -45,7 +45,6 @@ const deleteCard = async (req, res, next) => {
 
     return res.json(response);
   } catch (e) {
-    // console.log(e.name);
     if (e.name === 'CastError') {
       const err = new NotValidError(`${NOT_CORRECT_MESSAGE}: Некорректный id карточки`);
       next(err);
