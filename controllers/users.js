@@ -44,7 +44,7 @@ const getUserData = async (req, res, next) => {
     if (!user) {
       throw new NotFoundError(`${NOT_EXISTS_MESSAGE}: Пользователь не найден.`);
     }
-    return res.status(201).json(user);
+    return res.json(user);
   } catch (e) {
     next(e);
   }
