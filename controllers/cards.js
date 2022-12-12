@@ -17,7 +17,6 @@ const getCards = async (req, res, next) => {
 const createCard = async (req, res, next) => {
   try {
     const { name, link } = req.body;
-    console.log(req.body);
     const newCard = await Card.create({
       owner: req.user._id,
       name: name ? escape(name) : name,
@@ -31,7 +30,6 @@ const createCard = async (req, res, next) => {
         .join(', ');
       return next(new NotValidError(messages));
     }
-    console.log(e);
     return next(e);
   }
 };
@@ -43,7 +41,7 @@ const deleteCard = async (req, res, next) => {
       return next(new NotFoundError(`${NOT_EXISTS_MESSAGE}: Несуществующий id карточки`));
     }
 
-    if (req.user._id !== String(deletingCard.owner)) {
+    if (req.user._id !== String(deletingCard.owner._id)) {
       return next(new NotAcceptedError('Вы не можете удалить чужую карточку'));
     }
 
