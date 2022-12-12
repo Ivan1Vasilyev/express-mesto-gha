@@ -10,7 +10,7 @@ router.post(
   celebrate({
     body: Joi.object().keys({
       name: joiNameOrAbout(true),
-      link: joiUrl(),
+      link: joiUrl(true),
     }),
   }),
   createCard,

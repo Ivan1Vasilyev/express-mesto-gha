@@ -6,14 +6,10 @@ const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const { celebrate, Joi, errors } = require('celebrate');
-const userRouter = require('./routes/users');
-const cardRouter = require('./routes/cards');
+const { errors } = require('celebrate');
+const router = require('./routes');
 const { DEFAULT_ERROR, NOT_EXISTS_MESSAGE } = require('./utils/constants');
-const { login, createUser } = require('./controllers/users');
-const auth = require('./middlewares/auth');
 const NotFoundError = require('./errors/not-found');
-const { joiNameOrAbout, joiUrl, joiEmail, joiPassword } = require('./utils/joi-validators');
 
 const { PORT = 3000 } = process.env;
 
@@ -28,35 +24,9 @@ app.use(helmet());
 app.use(limiter);
 app.use(cookieParser());
 app.use(express.json());
-app.post(
-  '/signin',
-  celebrate({
-    body: Joi.object().keys({
-      email: joiEmail(),
-      password: joiPassword(),
-    }),
-  }),
-  login,
-);
-app.post(
-  '/signup',
-  celebrate({
-    body: Joi.object().keys({
-      email: joiEmail(),
-      password: joiPassword(),
-      name: joiNameOrAbout(),
-      about: joiNameOrAbout(),
-      avatar: joiUrl(),
-    }),
-  }),
-  createUser,
-);
-app.use(auth);
-app.use('/users', userRouter);
-app.use('/cards', cardRouter);
+app.use(router);
 app.use('*', (req, res, next) => {
-  const err = new NotFoundError(NOT_EXISTS_MESSAGE);
-  next(err);
+  next(new NotFoundError(NOT_EXISTS_MESSAGE));
 });
 app.use(errors());
 
