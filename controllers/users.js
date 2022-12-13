@@ -51,8 +51,7 @@ const getUser = async (req, res, next) => {
     return res.json(user);
   } catch (e) {
     if (e.name === 'CastError') {
-      const err = new NotValidError(`${NOT_CORRECT_MESSAGE}: Некорректный id`);
-      return next(err);
+      return next(new NotValidError(`${NOT_CORRECT_MESSAGE}: Некорректный id`));
     }
     return next(e);
   }
@@ -89,10 +88,7 @@ const createUser = async (req, res, next) => {
     });
   } catch (e) {
     if (e.name === 'ValidationError') {
-      const messages = Object.values(e.errors)
-        .map((err) => err.message)
-        .join(', ');
-      return next(new NotValidError(messages));
+      return next(new NotValidError(e));
     }
     if (e.code === 11000) {
       return next(new SameEmailError('Пользователь с таким email уже зарегистрирован'));
@@ -108,10 +104,7 @@ const upDateUserData = async (req, res, next) => {
     return updateUser(req, res, { name: escape(name), about: escape(about) });
   } catch (e) {
     if (e.name === 'ValidationError') {
-      const messages = Object.values(e.errors)
-        .map((err) => err.message)
-        .join(', ');
-      return next(new NotValidError(messages));
+      return next(new NotValidError(e));
     }
     return next(e);
   }
@@ -122,10 +115,7 @@ const upDateUserAvatar = async (req, res, next) => {
     return updateUser(req, res, { avatar: req.body.avatar });
   } catch (e) {
     if (e.name === 'ValidationError') {
-      const messages = Object.values(e.errors)
-        .map((err) => err.message)
-        .join(', ');
-      return next(new NotValidError(messages));
+      return next(new NotValidError(e));
     }
     return next(e);
   }

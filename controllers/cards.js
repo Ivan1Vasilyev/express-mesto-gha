@@ -25,10 +25,7 @@ const createCard = async (req, res, next) => {
     return res.status(CREATED_CODE).json(newCard);
   } catch (e) {
     if (e.name === 'ValidationError') {
-      const messages = Object.values(e.errors)
-        .map((err) => err.message)
-        .join(', ');
-      return next(new NotValidError(messages));
+      return next(new NotValidError(e));
     }
     return next(e);
   }
