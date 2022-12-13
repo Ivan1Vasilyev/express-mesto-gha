@@ -78,8 +78,6 @@ const createUser = async (req, res, next) => {
       email,
       password: hash,
     });
-    // delete newUser.password;
-    // console.log(newUser);
     return res.status(CREATED_CODE).json({
       name: newUser.name,
       about: newUser.about,

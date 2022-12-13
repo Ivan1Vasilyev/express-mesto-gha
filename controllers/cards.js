@@ -43,7 +43,7 @@ const deleteCard = async (req, res, next) => {
       return next(new NotAcceptedError('Вы не можете удалить чужую карточку'));
     }
 
-    deletingCard.remove();
+    await deletingCard.remove();
 
     return res.json(deletingCard);
   } catch (e) {
@@ -54,11 +54,12 @@ const deleteCard = async (req, res, next) => {
   }
 };
 
-const handleLike = (like) => async (req, res, next) => {
+const handleLike = (method) => async (req, res, next) => {
+  // возвращаем асинхронную функцию
   try {
     const likedCard = await Card.findByIdAndUpdate(
       req.params.cardId,
-      like ? { $addToSet: { likes: req.user._id } } : { $pull: { likes: req.user._id } },
+      { [method]: { likes: req.user._id } },
       { new: true },
     ).populate(['owner', 'likes']);
 
@@ -75,9 +76,9 @@ const handleLike = (like) => async (req, res, next) => {
   }
 };
 
-const likeCard = handleLike(true);
+const likeCard = handleLike('$addToSet');
 
-const dislikeCard = handleLike();
+const dislikeCard = handleLike('$pull');
 
 module.exports = {
   deleteCard,
