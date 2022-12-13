@@ -4,6 +4,7 @@ const { NOT_CORRECT_MESSAGE, NOT_EXISTS_MESSAGE, CREATED_CODE } = require('../ut
 const NotFoundError = require('../errors/not-found');
 const NotValidError = require('../errors/not-valid');
 const NotAcceptedError = require('../errors/not-accepted');
+const { getErrorMessages } = require('../utils/handle-errors');
 
 const getCards = async (req, res, next) => {
   try {
@@ -25,7 +26,7 @@ const createCard = async (req, res, next) => {
     return res.status(CREATED_CODE).json(newCard);
   } catch (e) {
     if (e.name === 'ValidationError') {
-      return next(new NotValidError(e));
+      return next(new NotValidError(getErrorMessages(e)));
     }
     return next(e);
   }

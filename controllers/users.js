@@ -7,6 +7,7 @@ const NotFoundError = require('../errors/not-found');
 const NotValidError = require('../errors/not-valid');
 const NotAuthorizedError = require('../errors/not-authorized');
 const SameEmailError = require('../errors/same-email');
+const { getErrorMessages } = require('../utils/handle-errors');
 
 const { JWT_SECRET } = process.env;
 
@@ -88,7 +89,7 @@ const createUser = async (req, res, next) => {
     });
   } catch (e) {
     if (e.name === 'ValidationError') {
-      return next(new NotValidError(e));
+      return next(new NotValidError(getErrorMessages(e)));
     }
     if (e.code === 11000) {
       return next(new SameEmailError('Пользователь с таким email уже зарегистрирован'));
@@ -104,7 +105,7 @@ const upDateUserData = async (req, res, next) => {
     return updateUser(req, res, { name: escape(name), about: escape(about) });
   } catch (e) {
     if (e.name === 'ValidationError') {
-      return next(new NotValidError(e));
+      return next(new NotValidError(getErrorMessages(e)));
     }
     return next(e);
   }
@@ -115,7 +116,7 @@ const upDateUserAvatar = async (req, res, next) => {
     return updateUser(req, res, { avatar: req.body.avatar });
   } catch (e) {
     if (e.name === 'ValidationError') {
-      return next(new NotValidError(e));
+      return next(new NotValidError(getErrorMessages(e)));
     }
     return next(e);
   }

@@ -1,12 +1,6 @@
 class NotValidError extends Error {
-  constructor(e) {
-    super(
-      typeof e === 'string'
-        ? e
-        : Object.values(e.errors)
-          .map((err) => err.message)
-          .join(', '),
-    );
+  constructor(message) {
+    super(message);
     this.statusCode = 400;
   }
 }
