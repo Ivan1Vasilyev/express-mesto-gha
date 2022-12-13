@@ -56,16 +56,18 @@ const deleteCard = async (req, res, next) => {
   }
 };
 
-const likeCard = async (req, res, next) => {
+const handleLike = (like) => async (req, res, next) => {
   try {
     const likedCard = await Card.findByIdAndUpdate(
       req.params.cardId,
-      { $addToSet: { likes: req.user._id } },
+      like ? { $addToSet: { likes: req.user._id } } : { $pull: { likes: req.user._id } },
       { new: true },
     ).populate(['owner', 'likes']);
+
     if (!likedCard) {
       return next(new NotFoundError(`${NOT_EXISTS_MESSAGE}: Несуществующий id карточки`));
     }
+
     return res.status(CREATED_CODE).json(likedCard);
   } catch (e) {
     if (e.name === 'CastError') {
@@ -75,24 +77,9 @@ const likeCard = async (req, res, next) => {
   }
 };
 
-const dislikeCard = async (req, res, next) => {
-  try {
-    const disLikedCard = await Card.findByIdAndUpdate(
-      req.params.cardId,
-      { $pull: { likes: req.user._id } },
-      { new: true },
-    ).populate(['owner', 'likes']);
-    if (!disLikedCard) {
-      return next(new NotFoundError(`${NOT_EXISTS_MESSAGE}: Несуществующий id карточки`));
-    }
-    return res.json(disLikedCard);
-  } catch (e) {
-    if (e.name === 'CastError') {
-      return next(new NotValidError(`${NOT_CORRECT_MESSAGE}: Некорректный id карточки`));
-    }
-    return next(e);
-  }
-};
+const likeCard = handleLike(true);
+
+const dislikeCard = handleLike();
 
 module.exports = {
   deleteCard,

@@ -10,6 +10,19 @@ const SameEmailError = require('../errors/same-email');
 
 const { JWT_SECRET } = process.env;
 
+const findUser = async (req, email) => {
+  const userId = req.params.userId || req.user_id;
+  const user = email
+    ? await User.findOne({ email }).select('+password')
+    : await User.findById(userId);
+  if (!user) {
+    throw email
+      ? new NotAuthorizedError('Неправильные почта или пароль')
+      : new NotFoundError(`${NOT_EXISTS_MESSAGE}: Пользователь не найден.`);
+  }
+  return user;
+};
+
 const getUsers = async (req, res, next) => {
   try {
     const users = await User.find({});
@@ -114,10 +127,7 @@ const upDateUserAvatar = async (req, res, next) => {
     const updatedUser = await User.findByIdAndUpdate(
       req.user._id,
       { avatar: req.body.avatar },
-      {
-        runValidators: true,
-        new: true,
-      },
+      { runValidators: true, new: true },
     );
 
     if (!updatedUser) {
