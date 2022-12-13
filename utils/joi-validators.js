@@ -9,7 +9,7 @@ const joiUrl = (required) => (required
   : Joi.string().pattern(REGEXP_URL));
 const joiEmail = () => Joi.string().required().email({ minDomainSegments: 2 });
 const joiPassword = () => Joi.string().required().min(4);
-const joiId = () => Joi.string().alphanum().required().length(24);
+const joiId = () => Joi.string().hex().required().length(24);
 
 module.exports = {
   joiNameOrAbout,

@@ -30,7 +30,6 @@ app.use('*', (req, res, next) => {
 });
 app.use(errors());
 
-// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   const { statusCode = DEFAULT_ERROR, message } = err;
   return res
