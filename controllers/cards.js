@@ -53,9 +53,8 @@ const deleteCard = async (req, res, next) => {
     return next(e);
   }
 };
-
+// возвращаем асинхронную функцию
 const handleLike = (method) => async (req, res, next) => {
-  // возвращаем асинхронную функцию
   try {
     const likedCard = await Card.findByIdAndUpdate(
       req.params.cardId,

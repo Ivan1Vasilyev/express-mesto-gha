@@ -11,29 +11,39 @@ const { getErrorMessages } = require('../utils/handle-errors');
 
 const { JWT_SECRET } = process.env;
 
-const findUser = async (req, email) => {
-  const user = email
-    ? await User.findOne({ email }).select('+password')
-    : await User.findById(req.params.userId || req.user._id);
-  if (!user) {
-    throw email
-      ? new NotAuthorizedError('Неправильные почта или пароль')
-      : new NotFoundError(`${NOT_EXISTS_MESSAGE}: Пользователь не найден.`);
+const findUser = async (res, next, id) => {
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      return next(new NotFoundError(`${NOT_EXISTS_MESSAGE}: Пользователь не найден.`));
+    }
+    return res.json(user);
+  } catch (e) {
+    if (e.name === 'CastError') {
+      return next(new NotValidError(`${NOT_CORRECT_MESSAGE}: Некорректный id`));
+    }
+    return next(e);
   }
-  return user;
 };
 
-const updateUser = async (req, res, updates) => {
-  const updatedUser = await User.findByIdAndUpdate(req.user._id, updates, {
-    runValidators: true,
-    new: true,
-  });
+const updateUser = async (req, res, next, updates) => {
+  try {
+    const updatedUser = await User.findByIdAndUpdate(req.user._id, updates, {
+      runValidators: true,
+      new: true,
+    });
 
-  if (!updatedUser) {
-    throw new NotFoundError(`${NOT_EXISTS_MESSAGE}: Пользователь не найден.`);
+    if (!updatedUser) {
+      return next(new NotFoundError(`${NOT_EXISTS_MESSAGE}: Пользователь не найден.`));
+    }
+
+    return res.json(updatedUser);
+  } catch (e) {
+    if (e.name === 'ValidationError') {
+      return next(new NotValidError(getErrorMessages(e)));
+    }
+    return next(e);
   }
-
-  return res.json(updatedUser);
 };
 
 const getUsers = async (req, res, next) => {
@@ -46,25 +56,13 @@ const getUsers = async (req, res, next) => {
 };
 
 const getUser = async (req, res, next) => {
-  try {
-    const user = await findUser(req);
-
-    return res.json(user);
-  } catch (e) {
-    if (e.name === 'CastError') {
-      return next(new NotValidError(`${NOT_CORRECT_MESSAGE}: Некорректный id`));
-    }
-    return next(e);
-  }
+  const { userId } = req.params;
+  return findUser(res, next, userId);
 };
 
 const getUserData = async (req, res, next) => {
-  try {
-    const user = await findUser(req);
-    return res.json(user);
-  } catch (e) {
-    return next(e);
-  }
+  const { _id } = req.user;
+  return findUser(res, next, _id);
 };
 
 const createUser = async (req, res, next) => {
@@ -97,37 +95,28 @@ const createUser = async (req, res, next) => {
 };
 
 const upDateUserData = async (req, res, next) => {
-  try {
-    const { name, about } = req.body;
-
-    return updateUser(req, res, { name: escape(name), about: escape(about) });
-  } catch (e) {
-    if (e.name === 'ValidationError') {
-      return next(new NotValidError(getErrorMessages(e)));
-    }
-    return next(e);
-  }
+  const { name, about } = req.body;
+  return updateUser(req, res, next, { name: escape(name), about: escape(about) });
 };
 
 const upDateUserAvatar = async (req, res, next) => {
-  try {
-    return updateUser(req, res, { avatar: req.body.avatar });
-  } catch (e) {
-    if (e.name === 'ValidationError') {
-      return next(new NotValidError(getErrorMessages(e)));
-    }
-    return next(e);
-  }
+  const { avatar } = req.body;
+  return updateUser(req, res, next, { avatar });
 };
 
 const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    const user = await findUser(req, email);
+    const user = await User.findOne({ email }).select('+password');
+    if (!user) {
+      return next(new NotAuthorizedError('Неправильные почта или пароль'));
+    }
+
     const isLogged = await bcryptjs.compare(password, user.password);
     if (!isLogged) {
       return next(new NotAuthorizedError('Неправильные почта или пароль'));
     }
+
     const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
     return res
       .cookie('jwt', token, {
