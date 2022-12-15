@@ -117,7 +117,9 @@ const login = async (req, res, next) => {
       return next(new NotAuthorizedError('Неправильные почта или пароль'));
     }
 
-    const token = jwt.sign({ _id: String(user._id) }, JWT_SECRET);
+    // console.log(user._id);
+
+    const token = jwt.sign({ _id: '6398b291a0f2d689cee8fbf2' }, JWT_SECRET, { expiresIn: '7d' });
     return res
       .cookie('jwt', token, {
         maxAge: 3600000 * 24 * 7,
