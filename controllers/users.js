@@ -106,28 +106,23 @@ const upDateUserAvatar = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   try {
-    // const { email, password } = req.body;s
-    // const user = await User.findOne({ email }).select('+password');
-    // if (!user) {
-    //   return next(new NotAuthorizedError('Неправильные почта или пароль'));
-    // }
+    const { email, password } = req.body;
 
-    // const isLogged = await bcryptjs.compare(
-    //   password,
-    //   '$2a$10$tcgqgVWHH1tiqBNfk.43g.OHViO5neEQVcTaoOw.KDRXBWgh9qbrq',
-    // );
-    // if (!isLogged) {
-    //   return next(new NotAuthorizedError('Неправильные почта или пароль'));
-    // }
+    const user = await User.findOne({ email }).select('+password');
+    if (!user) {
+      return next(new NotAuthorizedError('Неправильные почта или пароль'));
+    }
 
-    const token = jwt.sign({ _id: '6398b291a0f2d689cee8fbf2' }, JWT_SECRET);
-    return res
-      .cookie('jwt', token, {
-        maxAge: 3600000 * 24 * 7,
-        httpOnly: true,
-        sameSite: true,
-      })
-      .json({ message: 'Токен jwt передан в cookie' });
+    const isLogged = await bcryptjs.compare(
+      password,
+      '$2a$10$tcgqgVWHH1tiqBNfk.43g.OHViO5neEQVcTaoOw.KDRXBWgh9qbrq',
+    );
+    if (!isLogged) {
+      return next(new NotAuthorizedError('Неправильные почта или пароль'));
+    }
+
+    // const token = jwt.sign({ _id: '6398b291a0f2d689cee8fbf2' }, JWT_SECRET);
+    return res.json({ message: 'Токен jwt передан в cookie' });
   } catch (e) {
     return next(e);
   }
