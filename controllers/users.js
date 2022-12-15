@@ -107,7 +107,7 @@ const upDateUserAvatar = async (req, res, next) => {
 const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const user = await User.find({ email }).select('+password');
     if (!user) {
       return next(new NotAuthorizedError('Неправильные почта или пароль'));
     }
@@ -126,6 +126,7 @@ const login = async (req, res, next) => {
       })
       .json({ message: 'Токен jwt передан в cookie' });
   } catch (e) {
+    console.log(e);
     return next(e);
   }
 };
