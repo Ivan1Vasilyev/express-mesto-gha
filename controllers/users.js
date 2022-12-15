@@ -5,7 +5,7 @@ const User = require('../models/users');
 const { NOT_CORRECT_MESSAGE, NOT_EXISTS_MESSAGE, CREATED_CODE } = require('../utils/constants');
 const NotFoundError = require('../errors/not-found');
 const NotValidError = require('../errors/not-valid');
-const NotAuthorizedError = require('../errors/not-authorized');
+// const NotAuthorizedError = require('../errors/not-authorized');
 const SameEmailError = require('../errors/same-email');
 const { getErrorMessages } = require('../utils/handle-errors');
 
