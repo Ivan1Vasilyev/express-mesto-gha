@@ -66,7 +66,7 @@ const handleLike = (method) => async (req, res, next) => {
       return next(new NotFoundError(`${NOT_EXISTS_MESSAGE}: Несуществующий id карточки`));
     }
 
-    return res.status(CREATED_CODE).json(likedCard);
+    return res.json(likedCard);
   } catch (e) {
     if (e.name === 'CastError') {
       return next(new NotValidError(`${NOT_CORRECT_MESSAGE}: Некорректный id карточки`));
