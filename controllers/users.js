@@ -106,29 +106,24 @@ const upDateUserAvatar = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   try {
-    // const { email, password } = req.body;
-    // const user = await User.findOne({ email }).select('+password');
-    // if (!user) {
-    //   return next(new NotAuthorizedError('Неправильные почта или пароль'));
-    // }
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return next(new NotAuthorizedError('Неправильные почта или пароль'));
+    }
 
     // const isLogged = await bcryptjs.compare(password, user.password);
     // if (!isLogged) {
     //   return next(new NotAuthorizedError('Неправильные почта или пароль'));
     // }
 
-    // const token = jwt.sign({ _id: user._id }, JWT_SECRET);
-    // console.log(token);
+    const token = jwt.sign({ _id: user._id }, JWT_SECRET);
     return res
-      .cookie(
-        'jwt',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2Mzk4YjI5MWEwZjJkNjg5Y2VlOGZiZjIiLCJpYXQiOjE2NzExMTA1MDJ9.IgfhnwBOt-roOl6-GktZ2YGakCLwqL1vFhC-rDyEDps',
-        {
-          maxAge: 3600000 * 24 * 7,
-          httpOnly: true,
-          sameSite: true,
-        },
-      )
+      .cookie('jwt', token, {
+        maxAge: 3600000 * 24 * 7,
+        httpOnly: true,
+        sameSite: true,
+      })
       .json({ message: 'Токен jwt передан в cookie' });
   } catch (e) {
     return next(e);
