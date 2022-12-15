@@ -5,7 +5,7 @@ const User = require('../models/users');
 const { NOT_CORRECT_MESSAGE, NOT_EXISTS_MESSAGE, CREATED_CODE } = require('../utils/constants');
 const NotFoundError = require('../errors/not-found');
 const NotValidError = require('../errors/not-valid');
-// const NotAuthorizedError = require('../errors/not-authorized');
+const NotAuthorizedError = require('../errors/not-authorized');
 const SameEmailError = require('../errors/same-email');
 const { getErrorMessages } = require('../utils/handle-errors');
 
@@ -104,47 +104,31 @@ const upDateUserAvatar = async (req, res, next) => {
   return updateUser(req, res, next, { avatar });
 };
 
-const login = (req, res, next) => {
-  const { email, password } = req.body;
-  return User.findUserByCredentials(email, password, next)
-    .then((user) => {
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET);
-      res
-        .cookie('jwt', token, {
-          maxAge: 3600000,
-          httpOnly: true,
-          sameSite: true,
-        })
-        .send({ data: user.toJSON() });
-    })
-    .catch(next);
+const login = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email }).select('+password');
+    if (!user) {
+      return next(new NotAuthorizedError('Неправильные почта или пароль'));
+    }
+
+    const isLogged = await bcryptjs.compare(password, user.password);
+    if (!isLogged) {
+      return next(new NotAuthorizedError('Неправильные почта или пароль'));
+    }
+
+    const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+    return res
+      .cookie('jwt', token, {
+        maxAge: 3600000 * 24 * 7,
+        httpOnly: true,
+        sameSite: true,
+      })
+      .json({ message: 'Токен jwt передан в cookie' });
+  } catch (e) {
+    return next(e);
+  }
 };
-
-// const login = async (req, res, next) => {
-//   try {
-//     const { email, password } = req.body;
-//     const user = await User.findOne({ email }).select('+password');
-//     if (!user) {
-//       return next(new NotAuthorizedError('Неправильные почта или пароль'));
-//     }
-
-//     const isLogged = await bcryptjs.compare(password, user.password);
-//     if (!isLogged) {
-//       return next(new NotAuthorizedError('Неправильные почта или пароль'));
-//     }
-
-//     const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
-//     return res
-//       .cookie('jwt', token, {
-//         maxAge: 3600000 * 24 * 7,
-//         httpOnly: true,
-//         sameSite: true,
-//       })
-//       .json({ message: 'Токен jwt передан в cookie' });
-//   } catch (e) {
-//     return next(e);
-//   }
-// };
 
 module.exports = {
   getUser,
