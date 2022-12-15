@@ -112,10 +112,7 @@ const login = async (req, res, next) => {
       return next(new NotAuthorizedError('Неправильные почта или пароль'));
     }
 
-    const isLogged = await bcryptjs.compare(
-      password,
-      '$2a$10$tcgqgVWHH1tiqBNfk.43g.OHViO5neEQVcTaoOw.KDRXBWgh9qbrq',
-    );
+    const isLogged = await bcryptjs.compare(password, user.password);
     if (!isLogged) {
       return next(new NotAuthorizedError('Неправильные почта или пароль'));
     }
