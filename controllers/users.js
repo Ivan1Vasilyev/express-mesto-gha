@@ -106,7 +106,7 @@ const upDateUserAvatar = async (req, res, next) => {
 
 const login = (req, res, next) => {
   const { email, password } = req.body;
-  return User.findUserByCredentials(email, password)
+  return User.findUserByCredentials(email, password, next)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET);
       res
