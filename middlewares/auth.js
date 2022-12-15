@@ -12,12 +12,12 @@ const auth = (req, res, next) => {
 
   let payload;
 
-  try {
-    payload = jwt.verify(token, JWT_SECRET);
-  } catch (e) {
-    next(new NotAuthorizedError('Необходима авторизация'));
-    return;
-  }
+  // try {
+  //   payload = jwt.verify(token, JWT_SECRET);
+  // } catch (e) {
+  //   next(new NotAuthorizedError('Необходима авторизация'));
+  //   return;
+  // }
 
   req.user = { _id: payload._id };
 
