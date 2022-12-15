@@ -9,7 +9,7 @@ const NotAuthorizedError = require('../errors/not-authorized');
 const SameEmailError = require('../errors/same-email');
 const { getErrorMessages } = require('../utils/handle-errors');
 
-const JWT_SECRET = '92f9a674d2d7093310eecc48970e81e7775554fbe4fa27ab9ea85ffefe7daa1a';
+const { JWT_SECRET } = process.env;
 
 const findUser = async (res, next, id) => {
   try {
