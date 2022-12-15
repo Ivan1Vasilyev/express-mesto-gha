@@ -107,7 +107,6 @@ const upDateUserAvatar = async (req, res, next) => {
 const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
       return next(new NotAuthorizedError('Неправильные почта или пароль'));
@@ -122,7 +121,17 @@ const login = async (req, res, next) => {
     }
 
     // const token = jwt.sign({ _id: '6398b291a0f2d689cee8fbf2' }, JWT_SECRET);
-    return res.json({ message: 'Токен jwt передан в cookie' });
+    return res
+      .cookie(
+        'jwt',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2Mzk4YjI5MWEwZjJkNjg5Y2VlOGZiZjIiLCJpYXQiOjE2NzExMTc0MjJ9.qT9-lRwc1WDZZ3P_EJCIjpCnwlfziludrS6OywziHVY',
+        {
+          maxAge: 3600000 * 24 * 7,
+          httpOnly: true,
+          sameSite: true,
+        },
+      )
+      .json({ message: 'Токен jwt передан в cookie' });
   } catch (e) {
     return next(e);
   }
