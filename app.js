@@ -3,6 +3,7 @@ require('dotenv').config();
 // dotenv.config();
 const express = require('express');
 const mongoose = require('mongoose');
+const path = require('path');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -29,6 +30,8 @@ const corsOptions = {
   optionsSuccessStatus: 200,
   credentials: true,
 };
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(cors(corsOptions));
 app.use(helmet());
