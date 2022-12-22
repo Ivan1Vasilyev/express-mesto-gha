@@ -1,12 +1,13 @@
-const dotenv = require('dotenv');
+require('dotenv').config();
 
-dotenv.config();
+// dotenv.config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { errors } = require('celebrate');
+const cors = require('cors');
 const router = require('./routes');
 const { DEFAULT_ERROR, NOT_EXISTS_MESSAGE } = require('./utils/constants');
 const NotFoundError = require('./errors/not-found');
@@ -21,6 +22,15 @@ const limiter = rateLimit({
   max: 100,
 });
 
+const allowedCors = ['http://shaloban.students.nomoredomains.club/', 'localhost:3000'];
+
+const corsOptions = {
+  origin: allowedCors,
+  optionsSuccessStatus: 200,
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 app.use(helmet());
 app.use(limiter);
 app.use(cookieParser());
